@@ -1,14 +1,15 @@
-import pytest
-import json
+# test_app.py
+import unittest
 from app import app
 
-@pytest.fixture
-def client():
-       app.config['TESTING'] = True
-       with app.test_client() as client:
-           yield client
+class TestApp(unittest.TestCase):
+    def setUp(self):
+        self.app = app.test_client()
+        
+    def test_hello(self):
+        response = self.app.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.decode('utf-8'), "Hello, CI/CD Pipeline!")
 
-def test_hello(client):
-       rv = client.get('/hello')
-       assert rv.status_code == 200
-       assert json.loads(rv.data)['message'] == 'Hello, World!'
+if __name__ == '__main__':
+    unittest.main()

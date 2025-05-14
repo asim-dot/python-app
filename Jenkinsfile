@@ -8,11 +8,11 @@ pipeline {
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Setup') {
             steps {
                 script {
-                    // Build the Docker image (using Windows commands)
-                    bat 'docker build -t flask-app:latest .'
+                    // Install dependencies
+                    bat 'pip install -r requirements.txt'
                 }
             }
         }
@@ -20,8 +20,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Run tests within the Docker container
-                    bat 'docker run --rm flask-app:latest python -m pytest || exit 0'
+                    // Run tests
+                    bat 'python -m pytest || exit 0'
                 }
             }
         }
@@ -29,12 +29,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop any existing container (using Windows commands)
-                    bat 'docker stop flask-app-container || exit 0'
-                    bat 'docker rm flask-app-container || exit 0'
+                    // Kill any running Flask process
+                    bat 'taskkill /F /IM python.exe /FI "WINDOWTITLE eq Flask" || exit 0'
                     
-                    // Run the new container
-                    bat 'docker run -d -p 5000:5000 --name flask-app-container flask-app:latest'
+                    // Start Flask app as a background process with a title
+                    bat 'start "Flask" /B python app.py'
                 }
             }
         }
